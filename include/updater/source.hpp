@@ -50,7 +50,7 @@ struct Segment final
 struct SpeedSource final
 {
     SpeedSource() : speed(0), rate() {}
-    unsigned speed;
+    double speed;
     boost::optional<double> rate;
     std::uint8_t source;
 };
