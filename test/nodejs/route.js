@@ -43,8 +43,22 @@ test('route: routes Monaco on CoreCH', function(assert) {
     });
 });
 
+test('route: routes Monaco and returns a JSON buffer', function(assert) {
+    assert.plan(6);
+    var osrm = new OSRM({path: monaco_corech_path, algorithm: 'CoreCH'});
+    osrm.route({coordinates: [[13.43864,52.51993],[13.415852,52.513191]]}, { format: 'json_buffer'}, function(err, result) {
+        assert.ifError(err);
+        assert.ok(result instanceof Buffer);
+        const route = JSON.parse(result);
+        assert.ok(route.waypoints);
+        assert.ok(route.routes);
+        assert.ok(route.routes.length);
+        assert.ok(route.routes[0].geometry);
+    });
+});
+
 test('route: throws with too few or invalid args', function(assert) {
-    assert.plan(3);
+    assert.plan(4);
     var osrm = new OSRM(monaco_path);
     assert.throws(function() { osrm.route({coordinates: two_test_coordinates}) },
         /Two arguments required/);
@@ -52,6 +66,8 @@ test('route: throws with too few or invalid args', function(assert) {
         /First arg must be an object/);
     assert.throws(function() { osrm.route({coordinates: two_test_coordinates}, true)},
         /last argument must be a callback function/);
+    assert.throws(function() { osrm.route({coordinates: two_test_coordinates}, { format: 'invalid' }, function(err, route) {})},
+        /format must be a string:/);
 });
 
 test('route: provides no alternatives by default, but when requested it may (not guaranteed)', function(assert) {
@@ -590,3 +606,87 @@ test('route: route in Monaco without motorways', function(assert) {
     });
 });
 
+
+test('route: throws on invalid waypoints values needs at least two', function (assert) {
+    assert.plan(1);
+    var osrm = new OSRM(monaco_path);
+    var options = {
+        steps: true,
+        coordinates: three_test_coordinates,
+        waypoints: [0]
+    };
+    assert.throws(function () { osrm.route(options, function (err, response) { }); },
+        'At least two waypoints must be provided');
+});
+
+test('route: throws on invalid waypoints values, needs first and last coordinate indices', function (assert) {
+    assert.plan(1);
+    var osrm = new OSRM(monaco_path);
+    var options = {
+        steps: true,
+        coordinates: three_test_coordinates,
+        waypoints: [1, 2]
+    };
+    assert.throws(function () { osrm.route(options, function (err, response) { console.log(err); }); },
+        'First and last waypoints values must correspond to first and last coordinate indices');
+});
+
+test('route: throws on invalid waypoints values, order matters', function (assert) {
+    assert.plan(1);
+    var osrm = new OSRM(monaco_path);
+    var options = {
+        steps: true,
+        coordinates: three_test_coordinates,
+        waypoints: [2, 0]
+    };
+    assert.throws(function () { osrm.route(options, function (err, response) { console.log(err); }); },
+        'First and last waypoints values must correspond to first and last coordinate indices');
+});
+
+test('route: throws on invalid waypoints values, waypoints must correspond with a coordinate index', function (assert) {
+    assert.plan(1);
+    var osrm = new OSRM(monaco_path);
+    var options = {
+        steps: true,
+        coordinates: three_test_coordinates,
+        waypoints: [0, 3, 2]
+    };
+    assert.throws(function () { osrm.route(options, function (err, response) { console.log(err); }); },
+        'Waypoints must correspond with the index of an input coordinate');
+});
+
+test('route: throws on invalid waypoints values, waypoints must be an array', function (assert) {
+    assert.plan(1);
+    var osrm = new OSRM(monaco_path);
+    var options = {
+        steps: true,
+        coordinates: three_test_coordinates,
+        waypoints: "string"
+    };
+    assert.throws(function () { osrm.route(options, function (err, response) { console.log(err); }); },
+        'Waypoints must be an array of integers corresponding to the input coordinates.');
+});
+
+test('route: throws on invalid waypoints values, waypoints must be an array of integers', function (assert) {
+    assert.plan(1);
+    var osrm = new OSRM(monaco_path);
+    var options = {
+        steps: true,
+        coordinates: three_test_coordinates,
+        waypoints: [0,1,"string"]
+    };
+    assert.throws(function () { osrm.route(options, function (err, response) { console.log(err); }); },
+        'Waypoint values must be an array of integers');
+});
+
+test('route: throws on invalid waypoints values, waypoints must be an array of integers in increasing order', function (assert) {
+    assert.plan(1);
+    var osrm = new OSRM(monaco_path);
+    var options = {
+        steps: true,
+        coordinates: three_test_coordinates.concat(three_test_coordinates),
+        waypoints: [0,2,1,5]
+    };
+    assert.throws(function () { osrm.route(options, function (err, response) { console.error(`response: ${response}`); console.error(`error: ${err}`); }); },
+        /Waypoints must be supplied in increasing order/);
+});
