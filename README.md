@@ -1,5 +1,19 @@
 ## Open Source Routing Machine
 
+#### Fork notes
+This fork comes from the need to support [float values for speed updates](https://github.com/Project-OSRM/osrm-backend/issues/5079).
+Besides the changes listed in the issue, there was the need to update the build so the node bindings were built from the modified source instead of downloading the pre-built versions.
+
+- `package.json` was updated to always build the bindings (https://github.com/developmentseed/osrm-backend/commit/fdbbef9df5bf44294c593efcb172fcd82facee33)
+- `scripts/node_install.sh` When `osrm` is installed via yarn the dependencies are not put in the `node_modules` folder, making the [inclusion of NodeJS](https://github.com/developmentseed/osrm-backend/blob/d2b04e4071786a99bd52d1d2090d5324576317d1/src/nodejs/CMakeLists.txt#L9) fail. These changes ensure that the `NodeJS.cmake` is present when the build happens. (https://github.com/developmentseed/osrm-backend/commit/d2b04e4071786a99bd52d1d2090d5324576317d1)
+
+The docker container for `osrm-backend` is:
+```
+developmentseed/osrm-backend:v5.22.0
+```
+
+----
+
 | Linux / macOS | Windows | Code Coverage |
 | ------------- | ------- | ------------- |
 | [![Travis](https://travis-ci.org/Project-OSRM/osrm-backend.png?branch=master)](https://travis-ci.org/Project-OSRM/osrm-backend) | [![AppVeyor](https://ci.appveyor.com/api/projects/status/4iuo3s9gxprmcjjh)](https://ci.appveyor.com/project/DennisOSRM/osrm-backend) | [![Codecov](https://codecov.io/gh/Project-OSRM/osrm-backend/branch/master/graph/badge.svg)](https://codecov.io/gh/Project-OSRM/osrm-backend) |
