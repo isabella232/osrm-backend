@@ -12,6 +12,10 @@ if [[ -d build ]]; then
     echo "Detected existing build directory, skipping compiling."
     exit 0
 else
+    yarn ncmake update
+    mkdir -p node_modules/node-cmake
+    mv NodeJS.cmake node_modules/node-cmake
+
     mkdir -p build
     pushd build
     cmake .. $CMAKE_OPTIONS
